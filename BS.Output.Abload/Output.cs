@@ -36,7 +36,7 @@
 
     public string Information
     {
-      get { return name; }
+      get { return string.Empty; }
     }
        
     public string UserName
