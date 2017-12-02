@@ -8,7 +8,7 @@ using System.Web;
 using System.IO;
 using System.Xml;
 
-namespace BS.Output.Abload
+namespace BugShooting.Output.Abload
 {
 
   internal class AbloadProxy

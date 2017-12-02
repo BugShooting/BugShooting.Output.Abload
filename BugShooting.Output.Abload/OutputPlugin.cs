@@ -1,13 +1,14 @@
-﻿using System;
+﻿using BS.Plugin.V3.Common;
+using BS.Plugin.V3.Output;
+using BS.Plugin.V3.Utilities;
+using System;
 using System.Drawing;
-using System.Windows.Forms;
-using System.ServiceModel;
-using System.Web;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
-namespace BS.Output.Abload
+namespace BugShooting.Output.Abload
 {
-  public class OutputAddIn: V3.OutputAddIn<Output>
+  public class OutputPlugin: OutputPlugin<Output>
   {
 
     protected override string Name
@@ -75,37 +76,37 @@ namespace BS.Output.Abload
 
     }
 
-    protected override OutputValueCollection SerializeOutput(Output Output)
+    protected override OutputValues SerializeOutput(Output Output)
     {
 
-      OutputValueCollection outputValues = new OutputValueCollection();
+      OutputValues outputValues = new OutputValues();
 
-      outputValues.Add(new OutputValue("Name", Output.Name));
-      outputValues.Add(new OutputValue("UserName", Output.UserName));
-      outputValues.Add(new OutputValue("Password",Output.Password, true));
-      outputValues.Add(new OutputValue("OpenItemInBrowser", Convert.ToString(Output.OpenItemInBrowser)));
-      outputValues.Add(new OutputValue("CopyItemUrl", Convert.ToString(Output.CopyItemUrl)));
-      outputValues.Add(new OutputValue("FileName", Output.FileName));
-      outputValues.Add(new OutputValue("FileFormat", Output.FileFormat));
+      outputValues.Add("Name", Output.Name);
+      outputValues.Add("UserName", Output.UserName);
+      outputValues.Add("Password",Output.Password, true);
+      outputValues.Add("OpenItemInBrowser", Convert.ToString(Output.OpenItemInBrowser));
+      outputValues.Add("CopyItemUrl", Convert.ToString(Output.CopyItemUrl));
+      outputValues.Add("FileName", Output.FileName);
+      outputValues.Add("FileFormat", Output.FileFormat);
 
       return outputValues;
       
     }
 
-    protected override Output DeserializeOutput(OutputValueCollection OutputValues)
+    protected override Output DeserializeOutput(OutputValues OutputValues)
     {
 
-      return new Output(OutputValues["Name", this.Name].Value,
-                        OutputValues["UserName", ""].Value,
-                        OutputValues["Password", ""].Value, 
-                        OutputValues["FileName", "Screenshot"].Value, 
-                        OutputValues["FileFormat", ""].Value,
-                        Convert.ToBoolean(OutputValues["OpenItemInBrowser", Convert.ToString(true)].Value),
-                        Convert.ToBoolean(OutputValues["CopyItemUrl", Convert.ToString(true)].Value));
+      return new Output(OutputValues["Name", this.Name],
+                        OutputValues["UserName", ""],
+                        OutputValues["Password", ""], 
+                        OutputValues["FileName", "Screenshot"], 
+                        OutputValues["FileFormat", ""],
+                        Convert.ToBoolean(OutputValues["OpenItemInBrowser", Convert.ToString(true)]),
+                        Convert.ToBoolean(OutputValues["CopyItemUrl", Convert.ToString(true)]));
 
     }
 
-    protected override async Task<V3.SendResult> Send(IWin32Window Owner, Output Output, V3.ImageData ImageData)
+    protected override async Task<SendResult> Send(IWin32Window Owner, Output Output, ImageData ImageData)
     {
 
       try
@@ -118,7 +119,7 @@ namespace BS.Output.Abload
         bool showLogin = string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password);
         bool rememberCredentials = false;
 
-        string fileName = V3.FileHelper.GetFileName(Output.FileName, Output.FileFormat, ImageData);
+        string fileName = FileHelper.GetFileName(Output.FileName, ImageData);
 
         while (true)
         {
@@ -134,7 +135,7 @@ namespace BS.Output.Abload
 
             if (credentials.ShowDialog() != true)
             {
-              return new V3.SendResult(V3.Result.Canceled);
+              return new SendResult(Result.Canceled);
             }
 
             userName = credentials.UserName;
@@ -158,17 +159,17 @@ namespace BS.Output.Abload
 
           if (!send.ShowDialog() == true)
           {
-            return new V3.SendResult(V3.Result.Canceled);
+            return new SendResult(Result.Canceled);
           }
 
-          string fullFileName = String.Format("{0}.{1}", send.FileName, V3.FileHelper.GetFileExtention(Output.FileFormat));
-          string fileMimeType = V3.FileHelper.GetMimeType(Output.FileFormat);
-          byte[] fileBytes = V3.FileHelper.GetFileBytes(Output.FileFormat, ImageData);
+          string fullFileName = String.Format("{0}.{1}", send.FileName, FileHelper.GetFileExtention(Output.FileFormat));
+          string fileMimeType = FileHelper.GetMimeType(Output.FileFormat);
+          byte[] fileBytes = FileHelper.GetFileBytes(Output.FileFormat, ImageData);
 
           UploadResult uploadResult = await AbloadProxy.Upload(url, loginResult.LoginSession,fullFileName, fileMimeType, fileBytes);
           if (!uploadResult.Success)
           {
-            return new V3.SendResult(V3.Result.Failed, uploadResult.FailedMessage);
+            return new SendResult(Result.Failed, uploadResult.FailedMessage);
           }
 
           string imageUrl = String.Format("{0}/image.php?img={1}", url, uploadResult.ImageName);
@@ -176,7 +177,7 @@ namespace BS.Output.Abload
           // Open item in browser
           if (Output.OpenItemInBrowser)
           {
-            V3.WebHelper.OpenUrl(imageUrl);
+            WebHelper.OpenUrl(imageUrl);
           }
 
           // Copy item url
@@ -185,20 +186,20 @@ namespace BS.Output.Abload
             Clipboard.SetText(imageUrl);
           }
             
-          return new V3.SendResult(V3.Result.Success,
-                                    new Output(Output.Name,
-                                              (rememberCredentials) ? userName : Output.UserName,
-                                              (rememberCredentials) ? password : Output.Password,
-                                              Output.FileName,
-                                              Output.FileFormat,
-                                              Output.OpenItemInBrowser,
-                                              Output.CopyItemUrl));
+          return new SendResult(Result.Success,
+                                new Output(Output.Name,
+                                          (rememberCredentials) ? userName : Output.UserName,
+                                          (rememberCredentials) ? password : Output.Password,
+                                          Output.FileName,
+                                          Output.FileFormat,
+                                          Output.OpenItemInBrowser,
+                                          Output.CopyItemUrl));
         }
 
       }
       catch (Exception ex)
       {
-        return new V3.SendResult(V3.Result.Failed, ex.Message);
+        return new SendResult(Result.Failed, ex.Message);
       }
 
     }

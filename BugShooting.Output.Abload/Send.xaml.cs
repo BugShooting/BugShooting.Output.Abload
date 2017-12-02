@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Text.RegularExpressions;
 
-namespace BS.Output.Abload
+namespace BugShooting.Output.Abload
 {
   partial class Send : Window
   {

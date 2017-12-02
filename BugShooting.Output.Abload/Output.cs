@@ -1,4 +1,6 @@
-﻿namespace BS.Output.Abload
+﻿using BS.Plugin.V3.Output;
+
+namespace BugShooting.Output.Abload
 {
 
   public class Output: IOutput 
