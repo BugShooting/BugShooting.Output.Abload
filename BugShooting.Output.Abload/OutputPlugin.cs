@@ -119,7 +119,7 @@ namespace BugShooting.Output.Abload
         bool showLogin = string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password);
         bool rememberCredentials = false;
 
-        string fileName = FileHelper.GetFileName(Output.FileName, ImageData);
+        string fileName = AttributeHelper.ReplaceAttributes(Output.FileName, ImageData);
 
         while (true)
         {
