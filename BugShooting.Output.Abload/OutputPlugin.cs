@@ -5,6 +5,7 @@ using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace BugShooting.Output.Abload
 {
@@ -43,7 +44,7 @@ namespace BugShooting.Output.Abload
                                  String.Empty, 
                                  String.Empty, 
                                  "Screenshot",
-                                 String.Empty, 
+                                 FileHelper.GetFileFormats().First().ID,
                                  true,
                                  true);
 
@@ -65,7 +66,7 @@ namespace BugShooting.Output.Abload
                           edit.UserName,
                           edit.Password,
                           edit.FileName,
-                          edit.FileFormat,
+                          edit.FileFormatID,
                           edit.OpenItemInBrowser,
                           edit.CopyItemUrl);
       }
@@ -84,10 +85,10 @@ namespace BugShooting.Output.Abload
       outputValues.Add("Name", Output.Name);
       outputValues.Add("UserName", Output.UserName);
       outputValues.Add("Password",Output.Password, true);
+      outputValues.Add("FileName", Output.FileName);
+      outputValues.Add("FileFormatID", Output.FileFormatID.ToString());
       outputValues.Add("OpenItemInBrowser", Convert.ToString(Output.OpenItemInBrowser));
       outputValues.Add("CopyItemUrl", Convert.ToString(Output.CopyItemUrl));
-      outputValues.Add("FileName", Output.FileName);
-      outputValues.Add("FileFormat", Output.FileFormat);
 
       return outputValues;
       
@@ -99,8 +100,8 @@ namespace BugShooting.Output.Abload
       return new Output(OutputValues["Name", this.Name],
                         OutputValues["UserName", ""],
                         OutputValues["Password", ""], 
-                        OutputValues["FileName", "Screenshot"], 
-                        OutputValues["FileFormat", ""],
+                        OutputValues["FileName", "Screenshot"],
+                        new Guid(OutputValues["FileFormatID", ""]),
                         Convert.ToBoolean(OutputValues["OpenItemInBrowser", Convert.ToString(true)]),
                         Convert.ToBoolean(OutputValues["CopyItemUrl", Convert.ToString(true)]));
 
@@ -162,11 +163,12 @@ namespace BugShooting.Output.Abload
             return new SendResult(Result.Canceled);
           }
 
-          string fullFileName = String.Format("{0}.{1}", send.FileName, FileHelper.GetFileExtension(Output.FileFormat));
-          string fileMimeType = FileHelper.GetMimeType(Output.FileFormat);
-          byte[] fileBytes = FileHelper.GetFileBytes(Output.FileFormat, ImageData);
+          IFileFormat fileFormat = FileHelper.GetFileFormat(Output.FileFormatID);
 
-          UploadResult uploadResult = await AbloadProxy.Upload(url, loginResult.LoginSession,fullFileName, fileMimeType, fileBytes);
+          string fullFileName = String.Format("{0}.{1}", send.FileName, fileFormat.FileExtension);
+          byte[] fileBytes = FileHelper.GetFileBytes(Output.FileFormatID, ImageData);
+
+          UploadResult uploadResult = await AbloadProxy.Upload(url, loginResult.LoginSession,fullFileName, fileFormat.MimeType, fileBytes);
           if (!uploadResult.Success)
           {
             return new SendResult(Result.Failed, uploadResult.FailedMessage);
@@ -191,7 +193,7 @@ namespace BugShooting.Output.Abload
                                           (rememberCredentials) ? userName : Output.UserName,
                                           (rememberCredentials) ? password : Output.Password,
                                           Output.FileName,
-                                          Output.FileFormat,
+                                          Output.FileFormatID,
                                           Output.OpenItemInBrowser,
                                           Output.CopyItemUrl));
         }

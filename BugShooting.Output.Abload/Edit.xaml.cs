@@ -23,28 +23,14 @@ namespace BugShooting.Output.Abload
         FileNameReplacementList.Items.Add(item);
       }
 
-      IEnumerable<string> fileFormats = FileHelper.GetFileFormats();
-      foreach (string fileFormat in fileFormats)
-      {
-        ComboBoxItem item = new ComboBoxItem();
-        item.Content = fileFormat;
-        item.Tag = fileFormat;
-        FileFormatComboBox.Items.Add(item);
-      }
-
       NameTextBox.Text = output.Name;
       UserNameTextBox.Text = output.UserName;
       PasswordBox.Password = output.Password;
       FileNameTextBox.Text = output.FileName;
 
-      if (fileFormats.Contains(output.FileFormat))
-      {
-        FileFormatComboBox.SelectedValue = output.FileFormat;
-      }
-      else {
-        FileFormatComboBox.SelectedValue = fileFormats.First();
-      }
-            
+      FileFormatComboBox.ItemsSource = FileHelper.GetFileFormats();
+      FileFormatComboBox.SelectedValue = output.FileFormatID;
+
       OpenItemInBrowserCheckBox.IsChecked = output.OpenItemInBrowser;
       CopyItemUrlCheckBox.IsChecked = output.CopyItemUrl;
 
@@ -74,9 +60,9 @@ namespace BugShooting.Output.Abload
       get { return FileNameTextBox.Text; }
     }
 
-    public string FileFormat
+    public Guid FileFormatID
     {
-      get { return (string)FileFormatComboBox.SelectedValue; }
+      get { return (Guid)FileFormatComboBox.SelectedValue; }
     }
 
     public bool OpenItemInBrowser

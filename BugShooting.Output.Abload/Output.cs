@@ -1,4 +1,5 @@
 ﻿using BS.Plugin.V3.Output;
+using System;
 
 namespace BugShooting.Output.Abload
 {
@@ -10,15 +11,15 @@ namespace BugShooting.Output.Abload
     string userName;
     string password;
     string fileName;
-    string fileFormat;
+    Guid fileFormatID;
     bool openItemInBrowser;
     bool copyItemUrl;
 
     public Output(string name, 
                   string userName,
                   string password, 
-                  string fileName, 
-                  string fileFormat,
+                  string fileName,
+                  Guid fileFormatID,
                   bool openItemInBrowser,
                   bool copyItemUrl)
     {
@@ -26,7 +27,7 @@ namespace BugShooting.Output.Abload
       this.userName = userName;
       this.password = password;
       this.fileName = fileName;
-      this.fileFormat = fileFormat;
+      this.fileFormatID = fileFormatID;
       this.openItemInBrowser = openItemInBrowser;
       this.copyItemUrl = copyItemUrl;
     }
@@ -56,9 +57,9 @@ namespace BugShooting.Output.Abload
       get { return fileName; }
     }
 
-    public string FileFormat
+    public Guid FileFormatID
     {
-      get { return fileFormat; }
+      get { return fileFormatID; }
     }
 
     public bool OpenItemInBrowser
